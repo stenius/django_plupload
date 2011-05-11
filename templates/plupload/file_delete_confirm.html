@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2>Are you sure you want to delete {{ upload.filename }}?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Delete {{ upload.title|capfirst }}</button>
+    </form>
+{% endblock %}

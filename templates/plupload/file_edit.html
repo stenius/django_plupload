@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2>Editing {{ upload.filename }}'s Properties</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_table }}
+        <button type="submit">Set title & Publish</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "water_measurements/base.html" %}
+{% block content %}
+    {% if untitled_uploads %}
+    <h3>Your Unpublished Files</h3>
+    <div id='upload'></div>
+    {% for upload in untitled_uploads %}
+        <a href="{{ upload.get_absolute_url }}">{{ upload.filename}}</a> - {{ upload.user }} - {{ upload.datetime }}<a href="/biogas/upload/{{ upload.id }}/edit/">Add Title & Publish</a><br>
+    {% endfor %}
+    {% endif %}
+    <h3>All Files</h3>
+    {% for upload in uploads %}
+        {{ upload.user }} - <a href="{{ upload.get_absolute_url }}">{{ upload.title}}</a> - {{ upload.filename }} - {{ upload.datetime }} {% if user == upload.user %}<a href="/biogas/upload/{{ upload.id }}/edit/">Edit Title<a/> | <a href="/biogas/upload/{{ upload.id }}/delete/">Delete</a>{% endif %}<br>
+    {% endfor %}
+    <h3>Upload</h3>
+    <form enctype="multipart/form-data" action="{{ UPLOAD_PATH }}" method="post">
+    {% csrf_token %}
+    <div id="uploader">
+        {{form.file.errors}}{{form.file}}
+        <input type="submit" value="Upload" />
+    </div>
+
+</form>
+{% endblock %}
+{%  block appJS %}
+    <!-- Load Queue widget CSS and jQuery -->
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}plupload/js/jquery.ui.plupload/css/jquery.ui.plupload.css">
+
+    <!-- Load plupload and all it's runtimes and finally the jQuery queue widget -->
+    <script type="text/javascript" src="{{ STATIC_URL }}plupload/javascript/plupload.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}plupload/javascript/plupload.gears.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}plupload/javascript/plupload.silverlight.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}plupload/javascript/plupload.flash.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}plupload/javascript/plupload.browserplus.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}plupload/javascript/plupload.html4.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}plupload/javascript/plupload.html5.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}plupload/javascript/jquery.ui.plupload/jquery.ui.plupload.js"></script>
+
+    <script type="text/javascript">
+// Convert divs to queue widgets when the DOM is ready
+    $(function() {
+        $("#uploader").plupload({
+            // General settings
+            runtimes : 'gears,flash,silverlight,browserplus,html5',
+            url : '{{ UPLOAD_PATH }}',
+            max_file_size : '900mb',
+            chunk_size : '5mb',
+            unique_names : false,
+			multiple_queues: false,
+
+            headers: {'X-Requested-With' : 'XMLHttpRequest', 'X-CSRFToken' : '{{csrf_token}}'},
+
+            // Flash settings
+            flash_swf_url : '{{ STATIC_URL }}plupload/js/plupload.flash.swf',
+
+            // Silverlight settings
+            silverlight_xap_url : '{{ STATIC_URL }}plupload/js/plupload.silverlight.xap',
+
+            init : {
+                FileUploaded: function(up,file,info){
+                    $('#upload').prepend('<a href="/media/' + file.name+'">'+file.name +'</a> - {{ user.username }} -  '+ ' ' + file.size +'Bytes '+'<br>')
+                },
+
+                UploadComplete: function(up,file,info){
+                    $('#upload').prepend('Upload Done<br>');
+                    window.location.replace('/biogas/upload/');
+                },
+                }
+
+
+
+        });
+        // Client side form validation
+        $('form').submit(function(e) {
+            var uploader = $('#uploader').pluploadQueue();
+
+            // Validate number of uploaded files
+            if (uploader.total.uploaded == 0) {
+                // Files in queue upload them first
+                if (uploader.files.length > 0) {
+                    // When all files are uploaded submit form
+                    uploader.bind('UploadProgress', function() {
+                        if (uploader.total.uploaded == uploader.files.length)
+                            $('form').submit();
+                    });
+
+
+
+                    uploader.start();
+                } else
+                    alert('You must at least upload one file.');
+
+                e.preventDefault();
+            }
+        });
+    });
+    </script>
+{% endblock %}
