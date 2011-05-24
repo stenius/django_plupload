@@ -9,8 +9,12 @@
     {% endif %}
     <h3>All Files</h3>
     {% for upload in uploads %}
+		{% if user.last_login > upload.datetime %}
+			<span class="new_file">*</span>
+		{% endif %}
         {{ upload.user }} - <a href="{{ upload.get_absolute_url }}">{{ upload.title}}</a> - {{ upload.filename }} - {{ upload.datetime }} {% if user == upload.user %}<a href="/biogas/upload/{{ upload.id }}/edit/">Edit Title<a/> | <a href="/biogas/upload/{{ upload.id }}/delete/">Delete</a>{% endif %}<br>
     {% endfor %}
+
     <h3>Upload</h3>
     <form enctype="multipart/form-data" action="{{ UPLOAD_PATH }}" method="post">
     {% csrf_token %}
