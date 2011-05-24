@@ -24,3 +24,4 @@ class Upload(models.Model):
         return self.filename + u' - ' + self.user.username
     class Meta:
         ordering = ['-datetime']
+        unique_together = ('user','filename')
