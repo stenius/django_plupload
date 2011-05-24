@@ -17,9 +17,9 @@ class Upload(models.Model):
 
     def get_absolute_url(self):
         if settings.DEBUG:
-            return u'/media/' + self.filename
+            return u'/media/%s/%s' %(self.user.username, self.filename )
         else:
-            return u'/biogas/upload/%s/' % self.id
+            return u'/biogas/upload/%s' % self.id
     def __unicode__(self):
         return self.filename + u' - ' + self.user.username
     class Meta:

@@ -18,7 +18,7 @@ from forms import UploadedFileForm
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.utils.encoding import smart_str
-import os.path
+import os
 import tempfile
 from shutil import move
 import shutil
@@ -33,7 +33,14 @@ def fileUpload(request):
         if not name:
             name = uploaded_file.name
         name,ext = os.path.splitext(name)
-        dest_path = '{upload_url}{ds}{file}{ext}'.format(upload_url=settings.MEDIA_ROOT,ds=os.sep,file=name,ext=ext)
+        #check to see if a user has uploaded a file before, and if they have
+        #not, make them a upload directory
+        upload_dir = os.path.join(settings.MEDIA_ROOT, request.user.username)
+        if not os.path.exists(upload_dir):
+            os.mkdir(upload_dir)
+            pass
+
+        dest_path = '{upload_url}{ds}{file}{ext}'.format(upload_url=upload_dir,ds=os.sep,file=name,ext=ext)
         
         chunk = request.REQUEST.get('chunk','0')
         chunks = request.REQUEST.get('chunks','0')
@@ -68,7 +75,9 @@ def fileDownload(request,fileId):
     upload = get_object_or_404(Upload,id=fileId)
     response = HttpResponse(mimetype='application/force-download')
     response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(upload.filename)
-    response['X-Accel-Redirect'] = smart_str('/protected/' + upload.filename)
+    response['X-Accel-Redirect'] = smart_str('/protected/' +
+            upload.user.username +
+            '/' + upload.filename)
     return response
 
 @login_required
