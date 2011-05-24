@@ -75,9 +75,7 @@ def fileDownload(request,fileId):
     upload = get_object_or_404(Upload,id=fileId)
     response = HttpResponse(mimetype='application/force-download')
     response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(upload.filename)
-    response['X-Accel-Redirect'] = smart_str('/protected/' +
-            upload.user.username +
-            '/' + upload.filename)
+    response['X-Accel-Redirect'] = smart_str('/protected/' + upload.user.username + '/' + upload.filename)
     return response
 
 @login_required
